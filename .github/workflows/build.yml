@@ -28,6 +28,10 @@ jobs:
         run: |
           sed -i 's#<application#<uses-permission android:name="android.permission.INTERNET"/>\n    <application#' android/app/src/main/AndroidManifest.xml
 
+      - name: App name
+        run: |
+          sed -i 's#android:label="emoji_stickers"#android:label="ستيكرات إيموجي"#' android/app/src/main/AndroidManifest.xml
+
       - run: flutter pub get
 
       - run: flutter build apk --release

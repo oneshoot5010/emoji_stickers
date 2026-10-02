@@ -10,12 +10,12 @@ class Catalog {
   Catalog._();
 
   static const _palette = <Color>[
-    Color(0xFFFFE08A),
-    Color(0xFFFFC2D6),
-    Color(0xFFBFD8FF),
-    Color(0xFFC6F0D4),
-    Color(0xFFFFB8A8),
-    Color(0xFFD9C8FF),
+    Color(0xFFFFE082),
+    Color(0xFF81D4FA),
+    Color(0xFFFFAB91),
+    Color(0xFFA5D6A7),
+    Color(0xFFCE93D8),
+    Color(0xFFFFCC80),
   ];
 
   static List<StickerCategory> categories = [];
@@ -26,6 +26,20 @@ class Catalog {
     categories = parse(raw);
     all = [for (final c in categories) ...c.stickers];
   }
+
+  /// التصنيف "قصص" = كل ستيكراته نص عادي (مش شخصية /[]\ ومش متحرك)
+  static bool isStories(StickerCategory c) => c.stickers.every(
+        (s) => !s.isAnimated && !s.preview.contains('/[]'),
+      );
+
+  static List<StickerCategory> get regular =>
+      categories.where((c) => !isStories(c)).toList();
+
+  static List<StickerCategory> get stories =>
+      categories.where(isStories).toList();
+
+  static String shortTitle(StickerCategory c) =>
+      c.title.replaceFirst(RegExp(r'^قصص:\s*'), '');
 
   static const _arabicDigits = '٠١٢٣٤٥٦٧٨٩';
 
@@ -112,6 +126,7 @@ class Catalog {
         final space = t.indexOf(' ');
         if (space > 0) {
           emoji = t.substring(0, space);
+          if (emoji == '🆕') emoji = '✨';
           title = t.substring(space + 1).trim();
         } else {
           emoji = '✨';

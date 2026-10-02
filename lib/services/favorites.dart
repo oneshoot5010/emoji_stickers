@@ -22,4 +22,10 @@ class Favorites extends ChangeNotifier {
     notifyListeners();
     await _prefs?.setStringList(_key, _ids.toList());
   }
+
+  Future<void> clear() async {
+    _ids.clear();
+    notifyListeners();
+    await _prefs?.remove(_key);
+  }
 }
