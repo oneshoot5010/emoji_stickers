@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/sticker.dart';
-import '../widgets/sticker_image.dart';
 import '../widgets/sticker_sheet.dart';
 
 class CategoryScreen extends StatelessWidget {
@@ -19,18 +18,15 @@ class CategoryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final t = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(title: Text(title), backgroundColor: color),
       body: stickers.isEmpty
           ? Center(child: Text(emptyText))
-          : GridView.builder(
+          : ListView.separated(
               padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-              ),
               itemCount: stickers.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
               itemBuilder: (_, i) {
                 final s = stickers[i];
                 return InkWell(
@@ -41,8 +37,34 @@ class CategoryScreen extends StatelessWidget {
                       color: color.withValues(alpha: 0.35),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    padding: const EdgeInsets.all(10),
-                    child: StickerImage(sticker: s, size: 80),
+                    padding: const EdgeInsets.all(14),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Directionality(
+                            textDirection: TextDirection.ltr,
+                            child: Text(
+                              s.preview,
+                              style: const TextStyle(fontSize: 22, height: 1.35),
+                            ),
+                          ),
+                        ),
+                        if (s.isAnimated)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: Chip(
+                              label: Text('${s.frames.length} رسائل',
+                                  style: t.bodySmall),
+                              visualDensity: VisualDensity.compact,
+                            ),
+                          ),
+                        IconButton(
+                          tooltip: 'نسخ',
+                          icon: const Icon(Icons.copy),
+                          onPressed: () => copyFrame(context, s.preview),
+                        ),
+                      ],
+                    ),
                   ),
                 );
               },

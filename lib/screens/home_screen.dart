@@ -22,7 +22,7 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     Text('ستيكرات إيموجي', style: t.headlineMedium),
                     const SizedBox(height: 4),
-                    Text('اختار مزاجك وابعتهولهم', style: t.bodyLarge),
+                    Text('انسخ وابعت في أي محادثة', style: t.bodyLarge),
                   ],
                 ),
               ),
@@ -37,8 +37,9 @@ class HomeScreen extends StatelessWidget {
                   crossAxisSpacing: 12,
                   childAspectRatio: 1.05,
                 ),
-                itemCount: categories.length,
-                itemBuilder: (_, i) => _CategoryCard(category: categories[i]),
+                itemCount: Catalog.categories.length,
+                itemBuilder: (_, i) =>
+                    _CategoryCard(category: Catalog.categories[i]),
               ),
             ),
           ],
@@ -78,7 +79,7 @@ class _CategoryCard extends StatelessWidget {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(category.title, style: t.titleLarge),
+                Text(category.title, style: t.titleMedium),
                 Text('${category.stickers.length} ستيكر', style: t.bodySmall),
               ],
             ),
@@ -97,7 +98,7 @@ class _FavoritesTile extends StatelessWidget {
     return ListenableBuilder(
       listenable: Favorites.instance,
       builder: (context, _) {
-        final favs = allStickers
+        final favs = Catalog.all
             .where((s) => Favorites.instance.has(s.id))
             .toList();
         return Padding(

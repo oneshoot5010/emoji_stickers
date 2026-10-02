@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'data/catalog.dart';
 import 'screens/home_screen.dart';
 import 'services/favorites.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Catalog.load();
   await Favorites.instance.load();
   runApp(const EmojiApp());
 }

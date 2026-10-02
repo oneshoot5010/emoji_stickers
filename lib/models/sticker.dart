@@ -1,24 +1,23 @@
 import 'package:flutter/material.dart';
 
 class Sticker {
-  final String id;
-  final String emoji; // بديل مؤقت لحد ما صورة الستيكر تتضاف
-  final String label;
+  final int number;
+  final List<String> frames; // إطار واحد = رسالة واحدة
 
-  const Sticker({required this.id, required this.emoji, required this.label});
+  const Sticker({required this.number, required this.frames});
 
-  String get asset => 'assets/stickers/$id.png';
+  String get id => 's$number';
+  bool get isAnimated => frames.length > 1;
+  String get preview => frames.first;
 }
 
 class StickerCategory {
-  final String id;
   final String title;
   final String emoji;
   final Color color;
   final List<Sticker> stickers;
 
   const StickerCategory({
-    required this.id,
     required this.title,
     required this.emoji,
     required this.color,
