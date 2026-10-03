@@ -36,8 +36,18 @@ class Catalog {
     rebuild(notify: false);
   }
 
-  static String _applyName(String raw, String name) =>
-      raw.replaceAll('{الاسم}', name.isEmpty ? 'صاحبي' : name);
+  /// {الاسم} بيتبدّل بالاسم، و{مذكر|مؤنث} بيتختار حسب نوع الاسم
+  static final _genderForm = RegExp(r'\{([^{}|]+)\|([^{}|]+)\}');
+
+  static String _applyName(String raw, String name) {
+    final female = AppSettings.instance.isFemale;
+    return raw
+        .replaceAll('{الاسم}', name.isEmpty ? 'صاحبي' : name)
+        .replaceAllMapped(
+          _genderForm,
+          (m) => female ? m.group(2)! : m.group(1)!,
+        );
+  }
 
   /// بيعيد قراءة الستيكرات (بعد تغيير الاسم مثلًا)
   static void rebuild({bool notify = true}) {
@@ -166,7 +176,8 @@ class Catalog {
       final first = frames.first;
       final body = first.indexWhere((l) => l.contains('/['));
       if (body > 0) {
-        pad = indentOf(first[body]);
+        // الشخصية: المسافات قبل الراس مكتوبة في الملف نفسه (متحسبة بالمقاس)
+        pad = 0;
       } else if (frames.length > 1 && frames[1].isNotEmpty) {
         pad = indentOf(frames[1].first);
       }

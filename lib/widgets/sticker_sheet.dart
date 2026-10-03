@@ -6,6 +6,8 @@ import '../services/actions.dart';
 import '../services/favorites.dart';
 import '../services/settings.dart';
 import 'animated_text.dart';
+import 'whatsapp_icon.dart';
+import '../theme.dart';
 
 void showStickerSheet(BuildContext context, Sticker sticker) {
   showModalBottomSheet(
@@ -126,7 +128,7 @@ class _StickerSheet extends StatelessWidget {
                     Expanded(
                       child: OutlinedButton.icon(
                         onPressed: () => StickerActions.whatsapp(sticker),
-                        icon: const Icon(Icons.send, size: 18),
+                        icon: const WhatsAppIcon(size: 20),
                         label: const Text('واتساب (الكل)'),
                       ),
                     ),
@@ -171,10 +173,7 @@ class _StickerSheet extends StatelessWidget {
                                 alignment: Alignment.centerLeft,
                                 child: Text(
                                   frame,
-                                  style: TextStyle(
-                                    fontSize: 24 * scale,
-                                    height: 1.35,
-                                  ),
+                                  style: stickerStyle(24 * scale),
                                 ),
                               ),
                             ),
@@ -202,7 +201,7 @@ class _StickerSheet extends StatelessWidget {
                                 onPressed: () => StickerActions.whatsapp(
                                     sticker,
                                     frame: frame),
-                                icon: const Icon(Icons.send, size: 18),
+                                icon: const WhatsAppIcon(size: 20),
                                 label: const Text('واتساب'),
                               ),
                             ],

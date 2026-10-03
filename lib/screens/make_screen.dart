@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../widgets/whatsapp_icon.dart';
 import '../models/sticker.dart';
 import '../services/actions.dart';
 import '../theme.dart';
@@ -105,7 +106,7 @@ class _MakeScreenState extends State<MakeScreen> {
                 fit: BoxFit.scaleDown,
                 alignment: Alignment.centerLeft,
                 child: Text(_text,
-                    style: const TextStyle(fontSize: 30, height: 1.35)),
+                    style: stickerStyle(30)),
               ),
             ),
           ),
@@ -131,7 +132,7 @@ class _MakeScreenState extends State<MakeScreen> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => StickerActions.whatsapp(s),
-                  icon: const Icon(Icons.send, size: 18),
+                  icon: const WhatsAppIcon(size: 20),
                   label: const Text('واتساب'),
                 ),
               ),

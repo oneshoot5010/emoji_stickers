@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/sticker.dart';
 import '../services/settings.dart';
+import '../theme.dart';
 
 /// بيعرض الستيكر. لو متحرك، الإطارات بتتبدّل لوحدها كل ٠٫٦ ثانية.
 class AnimatedStickerText extends StatefulWidget {
@@ -68,7 +69,7 @@ class _AnimatedStickerTextState extends State<AnimatedStickerText> {
           child: FittedBox(
             fit: BoxFit.scaleDown,
             alignment: Alignment.centerLeft,
-            child: Text(frame, style: TextStyle(fontSize: size, height: 1.35)),
+            child: Text(frame, style: stickerStyle(size)),
           ),
         );
         if (!s.isAnimated) return text;

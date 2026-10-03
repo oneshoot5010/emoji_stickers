@@ -4,6 +4,7 @@ import '../services/actions.dart';
 import '../services/favorites.dart';
 import 'animated_text.dart';
 import 'sticker_sheet.dart';
+import 'whatsapp_icon.dart';
 
 class StickerCard extends StatelessWidget {
   final Sticker sticker;
@@ -72,7 +73,7 @@ class StickerCard extends StatelessWidget {
                         visualDensity: compact,
                         iconSize: 20,
                         tooltip: 'ابعت على واتساب',
-                        icon: const Icon(Icons.send),
+                        icon: const WhatsAppIcon(size: 22),
                         onPressed: () => StickerActions.whatsapp(sticker),
                       ),
                       ListenableBuilder(

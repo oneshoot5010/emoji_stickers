@@ -5,10 +5,11 @@ import '../data/catalog.dart';
 import '../services/favorites.dart';
 import '../services/recents.dart';
 import '../services/settings.dart';
+import '../widgets/whatsapp_icon.dart';
 
 const _githubUrl = 'https://github.com/oneshoot5010';
 const _whatsappUrl = 'https://wa.me/201044947639';
-const _appVersion = '0.3.0';
+const _appVersion = '0.3.2';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -143,6 +144,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onChanged: (v) async {
               await AppSettings.instance.setName(v);
               Catalog.rebuild();
+              if (mounted) setState(() {});
+            },
+          ),
+          const SizedBox(height: 8),
+          ListenableBuilder(
+            listenable: AppSettings.instance,
+            builder: (_, __) {
+              final st = AppSettings.instance;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment(value: 'auto', label: Text('تلقائي')),
+                      ButtonSegment(value: 'm', label: Text('ذكر')),
+                      ButtonSegment(value: 'f', label: Text('أنثى')),
+                    ],
+                    selected: {st.genderPref},
+                    onSelectionChanged: (v) async {
+                      await st.setGender(v.first);
+                      Catalog.rebuild();
+                    },
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    st.name.trim().isEmpty
+                        ? 'الصيغة بتتحدد من الاسم، أو اختارها بإيدك.'
+                        : 'الستيكرات هتتكتب بصيغة: ${st.isFemale ? 'مؤنث' : 'مذكر'}',
+                    style: t.bodySmall,
+                  ),
+                ],
+              );
             },
           ),
           ListenableBuilder(
@@ -218,7 +251,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   onTap: () => _open(_githubUrl),
                 ),
                 ListTile(
-                  leading: const Icon(Icons.chat),
+                  leading: const WhatsAppIcon(size: 26),
                   title: const Text('WhatsApp'),
                   subtitle: const Directionality(
                     textDirection: TextDirection.ltr,

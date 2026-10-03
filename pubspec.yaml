@@ -1,7 +1,7 @@
 name: emoji_stickers
 description: ستيكرات إيموجي عربي
 publish_to: "none"
-version: 0.3.0+6
+version: 0.3.2+8
 
 environment:
   sdk: ">=3.4.0 <4.0.0"
@@ -26,6 +26,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/stickers.txt
+    - assets/icon/whatsapp.png
 
 flutter_launcher_icons:
   android: true

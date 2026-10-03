@@ -19,3 +19,12 @@ ThemeData buildTheme(Brightness b) {
     textTheme: GoogleFonts.cairoTextTheme(base.textTheme),
   );
 }
+
+/// خط الستيكرات: نفس خط واتساب على أندرويد (Roboto)، عشان الشكل في التطبيق
+/// يطلع زي الشكل بعد ما تبعته (الراس فوق الجسم بالظبط).
+TextStyle stickerStyle(double size) => TextStyle(
+      fontFamily: 'Roboto',
+      fontFamilyFallback: const ['Noto Color Emoji', 'Noto Sans Arabic'],
+      fontSize: size,
+      height: 1.35,
+    );
