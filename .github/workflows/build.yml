@@ -5,6 +5,9 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -34,9 +37,45 @@ jobs:
 
       - run: flutter pub get
 
+      - name: App icon
+        run: dart run flutter_launcher_icons
+
       - run: flutter build apk --release
+
+      - name: Sign APK with the permanent key (if secrets exist)
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk emoji-stickers.apk
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > release.jks
+            BT=$(ls "$ANDROID_HOME/build-tools" | sort -V | tail -1)
+            "$ANDROID_HOME/build-tools/$BT/apksigner" sign \
+              --ks release.jks \
+              --ks-key-alias "$KEY_ALIAS" \
+              --ks-pass env:KEYSTORE_PASSWORD \
+              --key-pass env:KEYSTORE_PASSWORD \
+              emoji-stickers.apk
+            "$ANDROID_HOME/build-tools/$BT/apksigner" verify emoji-stickers.apk
+            rm -f release.jks
+          else
+            echo "No keystore secrets found: APK is debug-signed"
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
           name: emoji-stickers-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: emoji-stickers.apk
+
+      - name: Publish public download link (GitHub Release)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete latest --yes --cleanup-tag -R "$GITHUB_REPOSITORY" || true
+          gh release create latest emoji-stickers.apk \
+            -R "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
+            --title "أحدث نسخة" \
+            --notes "حمّل الملف emoji-stickers.apk وسطّبه على موبايلك."

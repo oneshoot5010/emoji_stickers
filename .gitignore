@@ -6,3 +6,5 @@ build/
 pubspec.lock
 android/
 ios/
+*.jks
+*.b64
