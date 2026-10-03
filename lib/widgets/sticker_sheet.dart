@@ -1,21 +1,11 @@
+import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:share_plus/share_plus.dart';
 import '../data/catalog.dart';
 import '../models/sticker.dart';
+import '../services/actions.dart';
 import '../services/favorites.dart';
-
-Future<void> copyFrame(BuildContext context, String frame) async {
-  await Clipboard.setData(ClipboardData(text: Catalog.forSend(frame)));
-  if (context.mounted) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(
-        content: Text('اتنسخ. الصقه في أي محادثة'),
-        duration: Duration(seconds: 1),
-      ));
-  }
-}
+import '../services/settings.dart';
+import 'animated_text.dart';
 
 void showStickerSheet(BuildContext context, Sticker sticker) {
   showModalBottomSheet(
@@ -26,13 +16,49 @@ void showStickerSheet(BuildContext context, Sticker sticker) {
   );
 }
 
+/// زرار "فاجئني": ستيكر عشوائي، وزرار "واحد تاني"
+void showSurprise(BuildContext context) {
+  if (Catalog.all.isEmpty) return;
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    showDragHandle: true,
+    builder: (_) => const _SurpriseSheet(),
+  );
+}
+
+class _SurpriseSheet extends StatefulWidget {
+  const _SurpriseSheet();
+
+  @override
+  State<_SurpriseSheet> createState() => _SurpriseSheetState();
+}
+
+class _SurpriseSheetState extends State<_SurpriseSheet> {
+  final Random _rnd = Random();
+  late Sticker _s = _pick();
+
+  Sticker _pick() => Catalog.all[_rnd.nextInt(Catalog.all.length)];
+
+  @override
+  Widget build(BuildContext context) {
+    return _StickerSheet(
+      key: ValueKey(_s.number),
+      sticker: _s,
+      onAnother: () => setState(() => _s = _pick()),
+    );
+  }
+}
+
 class _StickerSheet extends StatelessWidget {
   final Sticker sticker;
-  const _StickerSheet({required this.sticker});
+  final VoidCallback? onAnother;
+  const _StickerSheet({super.key, required this.sticker, this.onAnother});
 
   @override
   Widget build(BuildContext context) {
     final t = Theme.of(context).textTheme;
+    final scale = AppSettings.instance.fontScale;
     return SafeArea(
       child: ConstrainedBox(
         constraints: BoxConstraints(
@@ -48,11 +74,17 @@ class _StickerSheet extends StatelessWidget {
                   Expanded(
                     child: Text(
                       sticker.isAnimated
-                          ? 'متحرك: ${sticker.frames.length} رسائل بالترتيب'
+                          ? 'متحرك: ${sticker.frames.length} إطارات'
                           : 'ستيكر',
                       style: t.titleMedium,
                     ),
                   ),
+                  if (onAnother != null)
+                    TextButton.icon(
+                      onPressed: onAnother,
+                      icon: const Icon(Icons.casino, size: 18),
+                      label: const Text('واحد تاني'),
+                    ),
                   ListenableBuilder(
                     listenable: Favorites.instance,
                     builder: (_, __) {
@@ -62,12 +94,50 @@ class _StickerSheet extends StatelessWidget {
                         tooltip: fav ? 'شيل من المفضلة' : 'ضيف للمفضلة',
                         icon: Icon(
                           fav ? Icons.favorite : Icons.favorite_border,
+                          color: fav ? const Color(0xFFE53935) : null,
                         ),
                       );
                     },
                   ),
                 ],
               ),
+              if (sticker.isAnimated) ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: AnimatedStickerText(sticker: sticker, fontSize: 24),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FilledButton.icon(
+                        onPressed: () =>
+                            StickerActions.copyAll(context, sticker),
+                        icon: const Icon(Icons.copy_all, size: 18),
+                        label: const Text('نسخ الكل'),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => StickerActions.whatsapp(sticker),
+                        icon: const Icon(Icons.send, size: 18),
+                        label: const Text('واتساب (الكل)'),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'الكل في رسالة واحدة بيظهر الإطارات تحت بعض. عشان يتحرك فعلًا: انسخ كل إطار لوحده وابعته ورا اللي قبله.',
+                  style: t.bodySmall,
+                ),
+              ],
               const SizedBox(height: 8),
               Flexible(
                 child: ListView.separated(
@@ -90,32 +160,50 @@ class _StickerSheet extends StatelessWidget {
                           if (sticker.isAnimated)
                             Padding(
                               padding: const EdgeInsets.only(bottom: 6),
-                              child: Text('رسالة ${i + 1}', style: t.bodySmall),
+                              child: Text('إطار ${i + 1}', style: t.bodySmall),
                             ),
                           Directionality(
                             textDirection: TextDirection.ltr,
                             child: SizedBox(
                               width: double.infinity,
-                              child: Text(
-                                frame,
-                                style: const TextStyle(fontSize: 24, height: 1.35),
+                              child: FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: Text(
+                                  frame,
+                                  style: TextStyle(
+                                    fontSize: 24 * scale,
+                                    height: 1.35,
+                                  ),
+                                ),
                               ),
                             ),
                           ),
                           const SizedBox(height: 8),
-                          Row(
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
                             children: [
-                              FilledButton.icon(
-                                onPressed: () => copyFrame(context, frame),
+                              FilledButton.tonalIcon(
+                                onPressed: () => StickerActions.copyFrame(
+                                    context, sticker, frame),
                                 icon: const Icon(Icons.copy, size: 18),
-                                label: const Text('نسخ'),
+                                label: Text(
+                                  sticker.isAnimated ? 'نسخ الإطار' : 'نسخ',
+                                ),
                               ),
-                              const SizedBox(width: 8),
                               OutlinedButton.icon(
-                                onPressed: () =>
-                                    Share.share(Catalog.forSend(frame)),
+                                onPressed: () => StickerActions.share(sticker,
+                                    frame: frame),
                                 icon: const Icon(Icons.share, size: 18),
                                 label: const Text('مشاركة'),
+                              ),
+                              OutlinedButton.icon(
+                                onPressed: () => StickerActions.whatsapp(
+                                    sticker,
+                                    frame: frame),
+                                icon: const Icon(Icons.send, size: 18),
+                                label: const Text('واتساب'),
                               ),
                             ],
                           ),
